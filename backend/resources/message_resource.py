@@ -34,6 +34,7 @@ class MessageResource(Resource):
         message = Message.query.filter_by(id=id).first()
         args = message_parser.parse_args()
         message.content = args['content']
+        message.updated_at = db.func.now()
         db.session.commit()
         return message, 201
     
