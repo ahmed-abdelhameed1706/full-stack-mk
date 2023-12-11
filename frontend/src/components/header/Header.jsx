@@ -39,10 +39,10 @@ const Header = () => {
 
   return (
     <header className="relative bg-cover bg-center font-pacifico" style={{ backgroundImage: "url('/header-background.jpg')", height: headerHeight }}>
-      <div className="absolute inset-0 bg-yellow-900 opacity-80"></div>
+      <div className="absolute inset-0 bg-yellow-900 opacity-70"></div>
       <div className="flex md:flex-row xs:flex-col xs:text-center md:text-left xs:gap-40 items-center justify-between h-full text-white relative z-10 p-8">
-        <div className="xs:mb-0">
-          <animated.h1 style={headingSpring} className="md:text-[60px] xs:text-[40px] xs:pb-0 xs:mb-0 font-bold tracking-widest">
+        <div className="xs:mb-[-45px]">
+          <animated.h1 style={headingSpring} className="md:text-[60px] xs:text-[40px] xs:pb-0 xs:mb-[10px] font-bold tracking-widest">
             LETS CHAT MK
           </animated.h1>
           <animated.p style={headingSpring} className="mt-4 md:text-4xl xs:text-2xl subtitle text-center">
