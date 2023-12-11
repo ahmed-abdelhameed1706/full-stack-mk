@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSpring, animated } from 'react-spring';
 import "./Home.css";
+import { Link } from 'react-router-dom';
 
 const Home = () => {
   const navBarHeight = 80;
@@ -72,9 +73,11 @@ const Home = () => {
             <div className="bg-gray-800 p-6 rounded-lg">
               <h2 className="text-xl font-semibold mb-4">Explore Chat Rooms</h2>
               <p className='xs:text-sm md:text-lg'>Discover a variety of chat rooms catering to different interests and topics. Join conversations with like-minded individuals and explore the world of Let's Chat MK.</p>
+              <Link to='/explore-rooms'>
               <button className="bn13 md:text-lg xs:text-[0.8rem] mt-2 mb-0" onClick={handleOpenModal}>
                 Explore &rarr;
               </button>
+              </Link>
             </div>
           </animated.div>
 

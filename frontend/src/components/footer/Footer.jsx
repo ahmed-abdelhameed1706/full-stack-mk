@@ -14,7 +14,7 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="hover:text-yellow-300 transition-colors duration-300"
           >
-            <FontAwesomeIcon icon={faLinkedin} size="x" />
+            <FontAwesomeIcon icon={faLinkedin} />
           </a>
         </li>
         <li>
@@ -24,7 +24,7 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="hover:text-yellow-300 transition-colors duration-300"
           >
-            <FontAwesomeIcon icon={faGithub} size="x" />
+            <FontAwesomeIcon icon={faGithub}/>
           </a>
         </li>
         <li>
@@ -34,7 +34,7 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="hover:text-yellow-300 transition-colors duration-300"
           >
-            <FontAwesomeIcon icon={faTwitter} size="x" />
+            <FontAwesomeIcon icon={faTwitter}/>
           </a>
         </li>
       </ul>
