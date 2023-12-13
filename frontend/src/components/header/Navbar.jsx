@@ -1,7 +1,12 @@
 // Navbar.js
 import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 const Navbar = () => {
+  const {location} = useLocation();
+  console.log(location);
+  if (location === '/room') return null;
+
   return (
     <nav className="flex justify-between items-center p-4 bg-gray-800 text-white">
       <div className="text-xl font-bold cursor-pointer"><Link to='/'><img src="/mkletters.png" alt="Logo" className='w-12 h-12'/></Link></div>

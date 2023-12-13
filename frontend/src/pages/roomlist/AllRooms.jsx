@@ -15,22 +15,15 @@ const AllRooms = () => {
 
   // Dummy room data (replace this with actual data from your database)
   const initialRooms = [
-    { id: 1, name: 'League of legends', owner: 'User 1', users: 5, createdAt: '2023-01-01' },
-    { id: 2, name: 'Apex Legends', owner: 'User 2', users: 3, createdAt: '2023-01-05' },
-    { id: 3, name: 'Discord Friends', owner: 'User 1', users: 52, createdAt: '2023-01-01' },
-    { id: 4, name: 'Just Chatting', owner: 'User 2', users: 1, createdAt: '2023-01-05' },
-    { id: 5, name: 'Programming', owner: 'User 1', users: 41, createdAt: '2023-01-01' },
-    { id: 6, name: 'Room 2', owner: 'User 2', users: 311, createdAt: '2023-01-05' },
-    { id: 7, name: 'Room 1', owner: 'User 1', users: 6, createdAt: '2023-01-01' },
-    { id: 8, name: 'Room 2', owner: 'User 2', users: 3, createdAt: '2023-01-05' },
-    // ... add more rooms as needed    { id: 1, name: 'Room 1', owner: 'User 1', users: 5, createdAt: '2023-01-01' },
-    { id: 9, name: 'Room 2', owner: 'User 2', users: 3, createdAt: '2023-01-05' },
-    { id: 10, name: 'Room 1', owner: 'User 1', users: 327, createdAt: '2023-01-01' },
-    { id: 11, name: 'Room 2', owner: 'User 2', users: 21, createdAt: '2023-01-05' },
-    // ... add more rooms as needed    { id: 1, name: 'Room 1', owner: 'User 1', users: 5, createdAt: '2023-01-01' },
-    { id: 12, name: 'Room 2', owner: 'User 2', users: 763, createdAt: '2023-01-05' },
-    { id: 13, name: 'Room 1', owner: 'User 1', users: 2, createdAt: '2023-01-01' },
-    { id: 14, name: 'Room 2', owner: 'User 2', users: 3, createdAt: '2023-01-05' },
+    { id: 1, name: 'League of legends', owner: 'User 1', users: 5, createdAt: '2023-01-01', roomCode: 'asd1' },
+    { id: 2, name: 'Apex Legends', owner: 'User 2', users: 3, createdAt: '2023-01-05', roomCode: 'fdf1' },
+    { id: 3, name: 'Discord Friends', owner: 'User 1', users: 52, createdAt: '2023-01-01', roomCode: 'asd3t' },
+    { id: 4, name: 'Just Chatting', owner: 'User 2', users: 1, createdAt: '2023-01-05', roomCode: 'fg423' },
+    { id: 5, name: 'Programming', owner: 'User 1', users: 41, createdAt: '2023-01-01', roomCode: '1234' },
+    { id: 6, name: 'Room 2', owner: 'User 2', users: 311, createdAt: '2023-01-05', roomCode: '123dhh4' },
+    { id: 7, name: 'Room 1', owner: 'User 1', users: 6, createdAt: '2023-01-01', roomCode: 'dsr64'},
+    { id: 8, name: 'Room 2', owner: 'User 2', users: 3, createdAt: '2023-01-05', roomCode: 'llhgfg' },
+
   ];
 
   const [rooms, setRooms] = useState(initialRooms);
