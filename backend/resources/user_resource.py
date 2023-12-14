@@ -2,6 +2,7 @@ from ..models import User, db
 from flask_restful import Resource, reqparse, fields, marshal_with, abort
 from .message_resource import message_resource_fields
 from .room_resource import room_resource_fields
+from flask import jsonify, request
 
 user_parser = reqparse.RequestParser()
 user_parser.add_argument('name', type=str, required=True)
@@ -20,7 +21,7 @@ class UserResource(Resource):
         user = User.query.filter_by(session_id=id).first()
         if not user:
             abort(404, message="User {} doesn't exist".format(id))
-        return user
+        return jsonify(user)
 
     def delete(self, id):
         user = User.query.filter_by(id=id).first()

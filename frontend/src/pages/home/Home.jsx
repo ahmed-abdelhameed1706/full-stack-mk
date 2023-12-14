@@ -1,12 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSpring, animated } from 'react-spring';
 import "./Home.css";
 import { Link } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
 
 const Home = () => {
   const navBarHeight = 80;
   const footerHeight = 60;
   const homeHeight = `calc(100vh - ${navBarHeight}px - ${footerHeight}px)`;
+
+
+  useEffect(() => {
+    // Function to check if the user's session ID exists in the database
+    const checkSessionIdInDatabase = async (sessionId) => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/user/${sessionId}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (response.ok) {
+          // Session ID exists in the database, you may choose not to show the modal
+          console.log('Session ID exists in the database');
+        } else {
+          // Session ID does not exist, show the modal and create a new user
+          console.log('Session ID does not exist in the database');
+          handleOpenModal();
+        }
+      } catch (error) {
+        console.error('Error checking session ID in the database:', error);
+      }
+    };
+
+    // Generate a session ID for the user
+    const sessionId = uuidv4();
+
+    // Check if the session ID exists in the database
+    checkSessionIdInDatabase(sessionId);
+  }, []);
 
   // Animation for fade-in effect and scaling for each element
   const fadeInHeading = useSpring({

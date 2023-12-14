@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restful import Api
 from flask_migrate import Migrate
-
+from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__)
@@ -11,6 +11,7 @@ def create_app():
     app.register_blueprint(main, url_prefix='/')
 
     api = Api(app)
+    CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "*"}})
 
     from .resources import MessageResource
     from .resources import RoomResource, RoomListResource, RoomMessageListResource, RoomUserListResource
