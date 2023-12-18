@@ -1,43 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect  } from 'react';
 import { useSpring, animated } from 'react-spring';
 import "./Home.css";
 import { Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 
 const Home = () => {
   const navBarHeight = 80;
   const footerHeight = 60;
   const homeHeight = `calc(100vh - ${navBarHeight}px - ${footerHeight}px)`;
 
+  const [users, setUsers] = useState('');
+
+  const navigate = useNavigate();
+
+  const session_id = localStorage.getItem('session_id');
+  console.log(session_id);
 
   useEffect(() => {
-    // Function to check if the user's session ID exists in the database
-    const checkSessionIdInDatabase = async (sessionId) => {
-      try {
-        const response = await fetch(`http://localhost:5000/api/user/${sessionId}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (response.ok) {
-          // Session ID exists in the database, you may choose not to show the modal
-          console.log('Session ID exists in the database');
-        } else {
-          // Session ID does not exist, show the modal and create a new user
-          console.log('Session ID does not exist in the database');
-          handleOpenModal();
-        }
-      } catch (error) {
-        console.error('Error checking session ID in the database:', error);
-      }
-    };
-
-    // Generate a session ID for the user
-    const sessionId = uuidv4();
-
-    // Check if the session ID exists in the database
-    checkSessionIdInDatabase(sessionId);
+    getUser();
   }, []);
+
+  const getUser = () => {
+    axios.get(`http://127.0.0.1:5000/api/users/${session_id}`)
+      .then((res) => {
+        console.log(res.data);
+        setUsers(res.data);
+        
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   // Animation for fade-in effect and scaling for each element
   const fadeInHeading = useSpring({
@@ -81,6 +77,52 @@ const Home = () => {
     setModalOpen(false);
   };
 
+  const createUser = () => {
+    const session_id = uuidv4();
+    const nickname = document.getElementById('nickname').value;
+
+    axios.put('http://localhost:5000/api/user', {
+      session_id,
+      name: nickname,
+    })
+      .then((res) => {
+        console.log(res.data);
+        localStorage.setItem('session_id', session_id);
+        if (expoloreRooms) {
+          navigate('/explore-rooms')
+        } else if (privateMessaging) {
+          navigate('/create-or-join')
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    handleCloseModal();
+    
+  };
+
+  const [expoloreRooms, setExploreRooms] = useState(false);
+  const [privateMessaging, setPrivateMessaging] = useState(false);
+
+  const redirectToChat = () => {
+    setPrivateMessaging(true);
+    setExploreRooms(false);
+    if (users) {
+      navigate('/create-or-join')
+    } else {
+      handleOpenModal();
+    }
+  };
+
+  const redirectToExplore = () => {
+    setExploreRooms(true);
+    setPrivateMessaging(false);
+    if (users) {
+      navigate('/explore-rooms')
+    } else {
+      handleOpenModal();
+    }
+  };
   // Animation for modal fade-in and scale effect
   const fadeInModal = useSpring({
     opacity: isModalOpen ? 1 : 0,
@@ -104,11 +146,11 @@ const Home = () => {
             <div className="bg-gray-800 p-6 rounded-lg">
               <h2 className="text-xl font-semibold mb-4">Explore Chat Rooms</h2>
               <p className='xs:text-sm md:text-lg'>Discover a variety of chat rooms catering to different interests and topics. Join conversations with like-minded individuals and explore the world of Let's Chat MK.</p>
-              <Link to='/explore-rooms'>
-              <button className="bn13 md:text-lg xs:text-[0.8rem] mt-2 mb-0" onClick={handleOpenModal}>
+              
+              <button className="bn13 md:text-lg xs:text-[0.8rem] mt-2 mb-0" onClick={redirectToExplore}>
                 Explore &rarr;
               </button>
-              </Link>
+              
             </div>
           </animated.div>
 
@@ -117,7 +159,7 @@ const Home = () => {
             <div className="bg-gray-800 p-6 rounded-lg">
               <h2 className="text-xl font-semibold mb-4">Private Messaging</h2>
               <p className='xs:text-sm md:text-lg'>Enjoy private conversations with friends or make new connections through one-on-one messaging. Let's Chat MK provides a secure and personalized chatting experience.</p>
-              <button className="bn13 md:text-lg xs:text-[0.8rem] mt-2 mb-0" onClick={handleOpenModal}>
+              <button className="bn13 md:text-lg xs:text-[0.8rem] mt-2 mb-0" onClick={redirectToChat}>
                 Start now!
               </button>
             </div>
@@ -126,6 +168,7 @@ const Home = () => {
       </div>
 
       {/* Modal */}
+      
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-10">
           <div className="absolute inset-0 bg-black opacity-70" onClick={handleCloseModal}></div>
@@ -138,15 +181,13 @@ const Home = () => {
             <h2 className="text-xl font-semibold mb-4">Join a Chat Room</h2>
             <div className="mb-4">
               <label className="block text-white">Nickname</label>
-              <input type="text" className="bn13 w-full p-2 text-black" />
+              <input id="nickname" name="nickname" type="text" className="bn13 w-full p-2 text-black" />
             </div>
             <div className="flex justify-between">
-              <button className="bn13" onClick={handleCloseModal}>
+              <button className="bn13" onClick={createUser}>
                 Continue
               </button>
-              <button className="bn13" onClick={() => alert("My Rooms button clicked")}>
-                My Rooms
-              </button>
+              
             </div>
           </animated.div>
         </div>

@@ -21,7 +21,7 @@ def create_app():
     api.add_resource(MessageResource, '/api/messages', '/api/messages/<int:id>')
 
     #Room API endpoints
-    api.add_resource(RoomResource,'/api/room', '/api/rooms/<int:id>', endpoint='get_room')
+    api.add_resource(RoomResource,'/api/room', '/api/rooms/<string:code>', endpoint='get_room')
     api.add_resource(RoomMessageListResource, '/api/rooms/<int:id>/messages', endpoint='get_room_messages')
     api.add_resource(RoomUserListResource, '/api/rooms/<int:id>/users', endpoint='get_room_users')
     api.add_resource(RoomListResource, '/api/rooms', endpoint='get_all_rooms')

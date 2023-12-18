@@ -6,5 +6,5 @@ class User(db.Model):
     session_id = db.Column(db.String(255), nullable=False)
     messages = db.relationship('Message', back_populates='user')
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
-    rooms = db.relationship('Room', secondary='user_room', back_populates='users')
-    
+    rooms = db.relationship('UserRoom', secondary='user_room', back_populates='users')
+    owned_rooms = db.relationship('Room', back_populates='owner', lazy='dynamic')

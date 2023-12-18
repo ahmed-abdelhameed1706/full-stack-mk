@@ -1,10 +1,23 @@
-from ..models import Room, db
+from ..models import Room, db, User, UserRoom
 from flask_restful import Resource, reqparse, fields, marshal_with, abort
 from .message_resource import message_resource_fields
 
 room_parser = reqparse.RequestParser()
 room_parser.add_argument('name', type=str, required=True)
-room_parser.add_argument('code', type=str, required=True)
+room_parser.add_argument('owner', type=int, required=True)
+room_parser.add_argument('user', type=int, required=False)
+
+
+
+def generate_code(n):
+    import random
+    import string
+    code = ''
+    while True:
+        code = ''.join(random.choices(string.ascii_uppercase + string.digits + string.ascii_lowercase, k=n))
+        if not Room.query.filter_by(code=code).first():
+            break
+    return code
 
 
 room_resource_fields = {
@@ -12,16 +25,30 @@ room_resource_fields = {
     'name': fields.String,
     'code': fields.String,
     'created_at': fields.DateTime,
+    'owner': fields.Nested({
+        'id': fields.Integer,
+        'name': fields.String,
+        'session_id': fields.String,
+    }),
+    'messages': fields.List(fields.Nested(message_resource_fields)),
+    'users': fields.List(fields.Nested({
+        'id': fields.Integer,
+        'name': fields.String,
+        'session_id': fields.String,
+    })),
 }
 
 class RoomResource(Resource):
     @marshal_with(room_resource_fields)
-    def get(self, id):
-        room = Room.query.filter_by(id=id).first()
+    def get(self, code):
+        room = Room.query.filter_by(code=code).first()
+        if not room:
+            abort(404, message="Room {} doesn't exist".format(code))
         return room
 
-    def delete(self, id):
-        room = Room.query.filter_by(id=id).first()
+    def delete(self, code):
+        room = Room.query.filter_by(code=code).first()
+
         db.session.delete(room)
         db.session.commit()
         return '', 204
@@ -30,11 +57,23 @@ class RoomResource(Resource):
     @marshal_with(room_resource_fields)
     def put(self):
         args = room_parser.parse_args()
-        name = args['name']
-        code = args['code']
-        room = Room(name=name, code=code)
+        name = args['name'] 
+        code = generate_code(4)
+        
+        owner_id = args['owner']
+        owner = User.query.filter_by(id=owner_id).first()
+
+        room = Room(name=name, code=code, owner=owner)
         db.session.add(room)
         db.session.commit()
+
+        user_id = args['user'] 
+        user = User.query.filter_by(id=user_id).first()
+
+        user_room = UserRoom(user=user, room=room)
+        db.session.add(user_room)
+        db.session.commit()
+
         return room, 201
     
 
@@ -47,8 +86,8 @@ class RoomListResource(Resource):
 
 class RoomMessageListResource(Resource):
     @marshal_with(message_resource_fields)
-    def get(self, id):
-        room = Room.query.filter_by(id=id).first()
+    def get(self, code):
+        room = Room.query.filter_by(code=code).first()
         if not room:
             abort(404, message="Room {} doesn't exist".format(id))
             
@@ -56,8 +95,8 @@ class RoomMessageListResource(Resource):
     
 class RoomUserListResource(Resource):
     @marshal_with(room_resource_fields)
-    def get(self, id):
-        room = Room.query.filter_by(id=id).first()
+    def get(self, code):
+        room = Room.query.filter_by(code=code).first()
         if not room:
             abort(404, message="Room {} doesn't exist".format(id))
         return room.users

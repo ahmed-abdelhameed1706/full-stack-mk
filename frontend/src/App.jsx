@@ -6,6 +6,8 @@ import Home from './pages/home/Home'
 import Footer from './components/footer/Footer'
 import AllRooms from './pages/roomlist/AllRooms'
 import Room from './pages/room/Room'
+import CreateOrJoin from './pages/createorjoin/CreateOrJoin'
+import MyRooms from './pages/user/MyRooms'
 import { useLocation } from 'react-router-dom'
 
 function App() {
@@ -23,6 +25,8 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/explore-rooms" element={<AllRooms />} />
           <Route path="/room/:roomCode" element={<Room />} />
+          <Route path="/create-or-join" element={<CreateOrJoin />} />
+          <Route path="/my-rooms" element={<MyRooms />} />
         </Routes>
         <Footer />
       </Router>

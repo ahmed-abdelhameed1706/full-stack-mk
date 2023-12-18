@@ -2,17 +2,42 @@ import React, { useState, useEffect } from 'react';
 import { useSpring, animated } from 'react-spring';
 import { Link } from 'react-router-dom';
 import { useMediaQuery } from 'react-responsive';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 const Room = ({ match }) => {
   const isMdScreen = useMediaQuery({ query: '(min-width: 768px)' });
 
+  const { roomCode } = useParams();
+
   const [roomInfo, setRoomInfo] = useState({
-    roomCode: '12345',
-    roomName: 'Awesome Room',
-    roomOwner: 'John Doe',
-    connectedUsers: ['Alice', 'Bob'],
+    roomCode: '',
+    roomName: '',
+    roomOwner: '',
+    connectedUsers: [],
   });
 
+  const session_id = localStorage.getItem('session_id');
+  const [user, setUser] = useState([]);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    axios.get(`http://localhost:5000/api/users/${session_id}`)
+        .then((res) => {
+            console.log(res.data);
+            setUser(res.data);
+        })
+        .catch((err) => {
+            navigate('/home')
+        });
+  }
+    , []);
+
+  
+    
+  
   const navBarHeight = 80;
   const footerHeight = 60;
   const roomHeight = `calc(100vh - ${navBarHeight}px - ${footerHeight}px)`;
@@ -20,6 +45,36 @@ const Room = ({ match }) => {
   const [userList, setUserList] = useState(roomInfo.connectedUsers);
   const [leftPanelVisible, setLeftPanelVisible] = useState(isMdScreen);
   const [rightPanelVisible, setRightPanelVisible] = useState(isMdScreen);
+
+  useEffect(() => {
+    // Get the room code from URL params
+    const fetchRoomCode = roomCode;
+  
+    // Fetch room information based on room code
+    axios.get(`http://localhost:5000/api/rooms/${fetchRoomCode}`)
+      .then((res) => {
+        const roomData = res.data;
+        console.log(roomData);
+        setRoomInfo((prevRoomInfo) => ({
+          ...prevRoomInfo,
+          roomCode: roomData.code,
+          roomName: roomData.name,
+          roomOwner: roomData.owner.name,
+          connectedUsers: roomData.users,
+        }));
+      })
+      .catch((err) => {
+        console.error(err);
+        // Redirect to explore rooms page if room not found
+      });
+  }, [roomCode, navigate]);
+  
+  // Update userList whenever roomInfo.connectedUsers changes
+  useEffect(() => {
+    setUserList(roomInfo.connectedUsers);
+  }, [roomInfo.connectedUsers]);
+
+  
 
   const springProps = useSpring({
     opacity: 1,
@@ -63,17 +118,6 @@ const Room = ({ match }) => {
     }
   };
 
-  useEffect(() => {
-    // Simulate real-time updates (replace with actual logic)
-    const interval = setInterval(() => {
-      const updatedUserList = [...roomInfo.connectedUsers, 'New User'];
-      setRoomInfo((prev) => ({ ...prev, connectedUsers: updatedUserList }));
-      setUserList(updatedUserList);
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [roomInfo.connectedUsers]);
-
   const toggleLeftPanel = () => {
     setLeftPanelVisible(!leftPanelVisible);
     setRightPanelVisible(false);
@@ -114,7 +158,7 @@ const Room = ({ match }) => {
                 Back to Explore Rooms
               </button>
             </Link>
-            {roomInfo.roomOwner === 'John Doe' && (
+            {roomInfo.roomOwner === user.name && (
               <button className="bg-red-500 text-white px-4 py-2 rounded-md mt-2">Delete Room</button>
             )}
             {leftPanelVisible ? (
@@ -159,7 +203,7 @@ const Room = ({ match }) => {
             <p>Total Users: {userList.length}</p>
             <ul>
               {userList.map((user) => (
-                <li key={user}>{user}</li>
+                <li key={user.id}>{user.name}</li>
               ))}
             </ul>
             {rightPanelVisible ? (
