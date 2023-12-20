@@ -5,11 +5,46 @@ import { useMediaQuery } from 'react-responsive';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
+import io from 'socket.io-client';
+
 
 const Room = ({ match }) => {
+  
+
   const isMdScreen = useMediaQuery({ query: '(min-width: 768px)' });
 
+  const [Messages, setMessages] = useState([]);
+  const [newMessage, setMessage] = useState('');
+
+
+  useEffect(() => {
+    const socket = io('http://localhost:5000');
+    socket.on('connect', () => {
+      console.log('Connected to socket.io server');
+    });
+
+    socket.on('message', (message) => {
+      console.log(message);
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+
+    return () => {
+      socket.disconnect();
+    }
+
+    
+
+
+  }, []);
+
+
+
+
+
+
   const { roomCode } = useParams();
+
+  const navigate = useNavigate();
 
   const [roomInfo, setRoomInfo] = useState({
     roomCode: '',
@@ -21,9 +56,10 @@ const Room = ({ match }) => {
   const session_id = localStorage.getItem('session_id');
   const [user, setUser] = useState([]);
 
-  const navigate = useNavigate();
+  
 
   useEffect(() => {
+    console.log(roomInfo.connectedUsers)
     axios.get(`http://localhost:5000/api/users/${session_id}`)
         .then((res) => {
             console.log(res.data);
@@ -66,6 +102,7 @@ const Room = ({ match }) => {
       .catch((err) => {
         console.error(err);
         // Redirect to explore rooms page if room not found
+        navigate('/explore-rooms');
       });
   }, [roomCode, navigate]);
   
@@ -133,6 +170,17 @@ const Room = ({ match }) => {
     setRightPanelVisible(false);
   };
 
+  const deleteRoom = () => {
+    axios.delete(`http://localhost:5000/api/rooms/${roomInfo.roomCode}`)
+        .then((res) => {
+            console.log(res.data);
+            navigate('/explore-rooms');
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+}
+
   return (
     <div
       onTouchStart={onTouchStart}
@@ -159,7 +207,7 @@ const Room = ({ match }) => {
               </button>
             </Link>
             {roomInfo.roomOwner === user.name && (
-              <button className="bg-red-500 text-white px-4 py-2 rounded-md mt-2">Delete Room</button>
+              <button className="bg-red-500 text-white px-4 py-2 rounded-md mt-2" onClick={deleteRoom}>Delete Room</button>
             )}
             {leftPanelVisible ? (
               <button onClick={closePanels} className="xs:block md:hidden absolute top-4 right-4 z-50">

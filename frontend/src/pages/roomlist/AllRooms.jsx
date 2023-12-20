@@ -22,7 +22,7 @@ const AllRooms = () => {
     axios
       .get(`http://localhost:5000/api/users/${session_id}`)
       .then((res) => {
-        console.log(res.data);
+        
         setUser(res.data);
       })
       .catch((err) => {
@@ -36,7 +36,7 @@ const AllRooms = () => {
       .get(`http://localhost:5000/api/rooms`)
       .then((res) => {
         const roomData = res.data;
-        console.log(roomData);
+        
         setRooms(roomData);
       })
       .catch((err) => {

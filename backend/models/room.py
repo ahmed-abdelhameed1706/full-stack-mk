@@ -1,4 +1,4 @@
-from . import db
+from . import db, user_room
 
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -8,5 +8,5 @@ class Room(db.Model):
     owner = db.relationship('User', back_populates='owned_rooms')
     messages = db.relationship('Message', back_populates='room')
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
-    users = db.relationship('UserRoom', secondary='user_room', back_populates='rooms')
+    users = db.relationship('User', secondary=user_room, back_populates='rooms')
 

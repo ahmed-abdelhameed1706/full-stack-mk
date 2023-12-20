@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const {location} = useLocation();
-  console.log(location);
+  
   if (location === '/room') return null;
 
   return (

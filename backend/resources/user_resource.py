@@ -13,6 +13,9 @@ user_resource_fields = {
     'name': fields.String,
     'created_at': fields.DateTime,
     'session_id': fields.String,
+    'messages': fields.List(fields.Nested(message_resource_fields)),
+    'rooms': fields.List(fields.Nested(room_resource_fields)),
+    
 }
 
 class UserResource(Resource):

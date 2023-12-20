@@ -33,15 +33,55 @@ const CreateOrJoin = () => {
   });
 
     const createRoom = () => {
-        axios.put(`http://localhost:5000/api/room`, {
-            name: document.getElementById('roomName').value,
-            owner: user.id,
-            user: user.id,
+      const roomName = document.getElementById('roomName').value;
+
+      // Check if the room name is empty
+      if (!roomName.trim()) {
+        alert('Room name cannot be empty!');
+        return;
+      }
+
+      axios
+        .put(`http://localhost:5000/api/room`, {
+          name: roomName,
+          owner: user.id,
+          user: user.id,
         })
+        .then((res) => {
+          console.log(res.data);
+          const room = res.data;
+          navigate(`/room/${room.code}`);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    };
+
+    const joinRoom = () => {
+        roomCode = document.getElementById('roomCode').value;
+        axios.get(`http://localhost:5000/api/rooms/${roomCode}`)
             .then((res) => {
-                console.log(res.data);
                 const room = res.data;
-                navigate(`/room/${room.code}`);
+                console.log("room is " + room);
+                console.log(room)
+                console.log(user.rooms)
+                if (user.rooms.some((r) => r.code === roomCode)) {
+                    console.log('User already in room');
+                    navigate(`/room/${roomCode}`);
+                    return;
+                } else {
+                    console.log('User not in room');
+                    axios.put(`http://localhost:5000/api/room/${roomCode}`, {
+                        user: user.id,
+                    })
+                        .then((res) => {
+                            console.log(res.data);
+                            navigate(`/room/${roomCode}`);
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        });
+                }
             })
             .catch((err) => {
                 console.log(err);
@@ -57,7 +97,7 @@ const CreateOrJoin = () => {
         {/* Left Section */}
         <animated.div className="flex flex-col h-full border rounded p-4" style={cardAnimationProps}>
           <label htmlFor="roomName" className="mb-2">Room Name</label>
-          <input type="text" id="roomName" className="border rounded p-2 mb-4" />
+          <input type="text" id="roomName" className="border rounded p-2 mb-4"/>
           <animated.button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition" style={cardAnimationProps} onClick={createRoom}>
             Create Now</animated.button>
         </animated.div>
@@ -65,7 +105,7 @@ const CreateOrJoin = () => {
         <animated.div className="flex flex-col h-full border rounded p-4" style={cardAnimationProps}>
           <label htmlFor="roomCode" className="mb-2">Room Code</label>
           <input type="text" id="roomCode" className="border rounded p-2 mb-4" />
-          <animated.button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 transition" style={cardAnimationProps}>Join Now</animated.button>
+          <animated.button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 transition" style={cardAnimationProps} onClick={joinRoom}>Join Now</animated.button>
         </animated.div>
       </div>
     </div>
