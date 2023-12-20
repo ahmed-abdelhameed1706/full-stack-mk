@@ -13,7 +13,17 @@ message_resource_fields = {
     'user_id': fields.Integer,
     'room_id': fields.Integer,
     'created_at': fields.DateTime,
-    'updated_at': fields.DateTime
+    'updated_at': fields.DateTime,
+    'user': fields.Nested({
+        'id': fields.Integer,
+        'name': fields.String,
+        'session_id': fields.String,
+    }),
+    'room': fields.Nested({
+        'id': fields.Integer,
+        'name': fields.String,
+        'code': fields.String,
+        'created_at': fields.DateTime,}),
 }
 
 
@@ -48,4 +58,11 @@ class MessageResource(Resource):
         db.session.add(message)
         db.session.commit()
         return message, 201
+    
+
+class MessageListResource(Resource):
+    @marshal_with(message_resource_fields)
+    def get(self):
+        messages = Message.query.all()
+        return messages
 

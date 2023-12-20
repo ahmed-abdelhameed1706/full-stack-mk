@@ -58,7 +58,7 @@ const CreateOrJoin = () => {
     };
 
     const joinRoom = () => {
-        roomCode = document.getElementById('roomCode').value;
+        const roomCode = document.getElementById('roomCode').value;
         axios.get(`http://localhost:5000/api/rooms/${roomCode}`)
             .then((res) => {
                 const room = res.data;
@@ -85,6 +85,7 @@ const CreateOrJoin = () => {
             })
             .catch((err) => {
                 console.log(err);
+                alert('Room does not exist!');
             });
     }
 

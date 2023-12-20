@@ -7,3 +7,4 @@ from .user_resource import UserResource
 from .user_resource import UserListResource
 from .user_resource import UserMessageListResource
 from .user_resource import UserRoomListResource
+from .message_resource import MessageListResource

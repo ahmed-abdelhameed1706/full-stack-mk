@@ -13,12 +13,13 @@ def create_app():
     api = Api(app)
     CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "*"}})
 
-    from .resources import MessageResource
+    from .resources import MessageResource, MessageListResource
     from .resources import RoomResource, RoomListResource, RoomMessageListResource, RoomUserListResource
     from .resources import UserResource, UserListResource, UserMessageListResource, UserRoomListResource
 
     #Message API endpoints 
     api.add_resource(MessageResource, '/api/messages', '/api/messages/<int:id>')
+    api.add_resource(MessageListResource, '/api/all-messages', endpoint='get_all_messages')
 
     #Room API endpoints
     api.add_resource(RoomResource,'/api/room', '/api/rooms/<string:code>', '/api/room/<string:code>', endpoint='get_room')

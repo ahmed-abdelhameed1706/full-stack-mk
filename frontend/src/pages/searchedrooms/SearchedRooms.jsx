@@ -3,8 +3,11 @@ import { useSpring, animated } from 'react-spring';
 import RoomCard from '../../components/roomcard/RoomCard';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
-const AllRooms = () => {
+const SearchedRooms = () => {
+  const { searchWord } = useParams();
+  
   const navBarHeight = 80;
   const footerHeight = 60;
   const allRoomsHeight = `calc(100vh - ${navBarHeight}px - ${footerHeight}px)`;
@@ -37,7 +40,12 @@ const AllRooms = () => {
       .then((res) => {
         const roomData = res.data;
         
-        setRooms(roomData);
+        const filteredRooms = roomData.filter((room) => {
+          return room.name.toLowerCase().includes(searchWord.toLowerCase());
+        }
+        );
+        setRooms(filteredRooms);
+        
       })
       .catch((err) => {
         console.log(err);
@@ -79,7 +87,7 @@ const AllRooms = () => {
     <div className="pb-10 pt-2 overflow-y-auto" style={{ height: allRoomsHeight }}>
       <div className="container mx-auto ">
         <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-bold my-8">All Rooms</h1>
+          <h1 className="text-4xl font-bold my-8">Searched Rooms</h1>
           <animated.button style={fadeButton} onClick={handleSort}>
             Sort: {ascending ? '1 → 9' : '9 → 1'}
           </animated.button>
@@ -112,4 +120,4 @@ const AnimatedRoomCard = ({ room, index, isLoaded }) => {
   /></animated.div>;
 };
 
-export default AllRooms;
+export default SearchedRooms

@@ -9,6 +9,7 @@ import Room from './pages/room/Room'
 import CreateOrJoin from './pages/createorjoin/CreateOrJoin'
 import MyRooms from './pages/user/MyRooms'
 import { useLocation } from 'react-router-dom'
+import SearchedRooms from './pages/searchedrooms/SearchedRooms'
 
 function App() {
 
@@ -27,6 +28,7 @@ function App() {
           <Route path="/room/:roomCode" element={<Room />} />
           <Route path="/create-or-join" element={<CreateOrJoin />} />
           <Route path="/my-rooms" element={<MyRooms />} />
+          <Route path="/searched-rooms/:searchWord" element={<SearchedRooms />} />
         </Routes>
         <Footer />
       </Router>

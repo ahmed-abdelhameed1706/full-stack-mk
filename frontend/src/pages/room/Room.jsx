@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSpring, animated } from 'react-spring';
 import { Link } from 'react-router-dom';
 import { useMediaQuery } from 'react-responsive';
@@ -13,29 +13,12 @@ const Room = ({ match }) => {
 
   const isMdScreen = useMediaQuery({ query: '(min-width: 768px)' });
 
-  const [Messages, setMessages] = useState([]);
+  
   const [newMessage, setMessage] = useState('');
 
 
-  useEffect(() => {
-    const socket = io('http://localhost:5000');
-    socket.on('connect', () => {
-      console.log('Connected to socket.io server');
-    });
-
-    socket.on('message', (message) => {
-      console.log(message);
-      setMessages((prevMessages) => [...prevMessages, message]);
-    });
-
-    return () => {
-      socket.disconnect();
-    }
-
-    
-
-
-  }, []);
+  
+  const chatMessageRef = useRef(null);
 
 
 
@@ -55,11 +38,11 @@ const Room = ({ match }) => {
 
   const session_id = localStorage.getItem('session_id');
   const [user, setUser] = useState([]);
+  const [Messages, setMessages] = useState([]);
 
   
 
   useEffect(() => {
-    console.log(roomInfo.connectedUsers)
     axios.get(`http://localhost:5000/api/users/${session_id}`)
         .then((res) => {
             console.log(res.data);
@@ -77,6 +60,9 @@ const Room = ({ match }) => {
   const navBarHeight = 80;
   const footerHeight = 60;
   const roomHeight = `calc(100vh - ${navBarHeight}px - ${footerHeight}px)`;
+  const messageHeight = isMdScreen
+    ? `calc(100vh - ${navBarHeight}px - ${footerHeight}px - 100px)`
+    : `calc(100vh - ${navBarHeight}px - ${footerHeight}px - 130px)`;
 
   const [userList, setUserList] = useState(roomInfo.connectedUsers);
   const [leftPanelVisible, setLeftPanelVisible] = useState(isMdScreen);
@@ -97,6 +83,7 @@ const Room = ({ match }) => {
           roomName: roomData.name,
           roomOwner: roomData.owner.name,
           connectedUsers: roomData.users,
+          messages: roomData.messages,
         }));
       })
       .catch((err) => {
@@ -107,9 +94,6 @@ const Room = ({ match }) => {
   }, [roomCode, navigate]);
   
   // Update userList whenever roomInfo.connectedUsers changes
-  useEffect(() => {
-    setUserList(roomInfo.connectedUsers);
-  }, [roomInfo.connectedUsers]);
 
   
 
@@ -181,6 +165,119 @@ const Room = ({ match }) => {
         });
 }
 
+useEffect(() => {
+  axios.get(`http://localhost:5000/api/rooms/${roomInfo.roomCode}/messages`)
+      .then((res) => {
+          const messages = res.data;
+          for (let i = 0; i < messages.length; i++) {
+              setMessages((prevMessages) => [...prevMessages, { user: messages[i].user.name, content: messages[i].content }]);
+          }
+          console.log('messages are:')
+          console.log(Messages);
+      }
+      )
+      .catch((err) => {
+          console.log(err);
+      }
+      );
+}, [roomInfo.roomCode]);
+
+
+
+const [currentMessage, setCurrentMessage] = useState('');
+
+  // Function to handle sending messages
+  const sendMessage = () => {
+
+    const trimmedMessage = currentMessage.trim();
+    if (!trimmedMessage) {
+      // If the message is empty or contains only whitespace, don't send it
+      return;
+  }
+
+    const socket = io('http://localhost:5000');
+    // Emit the 'send_message' event with the message and user information
+    socket.emit('send_message', { room: roomInfo.roomCode, user: user.name, message: currentMessage, userId: user.id });
+
+    // Optionally, you can update the local state or perform any other actions here
+
+    // Clear the input field after sending the message
+    setCurrentMessage('');
+    scrollToBottom();
+  };
+
+  const scrollToBottom = () => {
+    if (chatMessageRef.current) {
+      chatMessageRef.current.scrollTop = chatMessageRef.current.scrollHeight;
+    }
+  }
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [Messages]);
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevents the default behavior of the Enter key in a text area
+      sendMessage();
+    }
+  };
+
+
+
+useEffect(() => {
+  const socket = io('http://localhost:5000');
+
+  socket.on('connect', () => {
+    console.log('Connected to socket.io server');
+    socket.emit('join_room', { room: roomInfo.roomCode, user: user.name, userId: user.id });
+  });
+
+  socket.on('user_connected', (data) => {
+    console.log(`${data.user} joined the room`);
+    
+    const existingUserIndex = userList.findIndex((u) => u.id === data.userId);
+
+  if (existingUserIndex !== -1) {
+    // Update existing user's information
+    setUserList((prevUserList) => {
+      const newUserList = [...prevUserList];
+      newUserList[existingUserIndex] = { id: data.userId, name: data.user };
+      return newUserList;
+    });
+  } else {
+    // Add the new user to the list
+    setUserList((prevUserList) => [...prevUserList, { id: data.userId, name: data.user }]);
+  }
+
+  socket.emit('get_existing_users', { room: roomInfo.roomCode });
+  });
+
+  socket.on('existing_users', (data) => {
+    // Update the userList with the existing users received from the server
+    setUserList(data.users);
+  });
+
+  socket.on('user_disconnected', (data) => {
+    console.log(`User ${data.userId} left the room`);
+    // Update the userList by removing the disconnected user
+    setUserList((prevUserList) => prevUserList.filter((u) => u.id !== data.userId));
+    
+  });
+
+  socket.on('receive_message', (data) => {
+    console.log(`Received message: ${data.message} from ${data.user}`);
+    // Update your Messages state or UI with the received message
+    setMessages((prevMessages) => [...prevMessages, { user: data.user, content: data.message }]);
+  });
+
+  return () => {
+    socket.emit('leave_room', { room: roomInfo.roomCode, userId: user.id });
+    socket.off('receive_message');
+    socket.disconnect();
+  };
+}, [roomCode, navigate, roomInfo.roomCode, user.id, user.name]);
+
   return (
     <div
       onTouchStart={onTouchStart}
@@ -200,7 +297,8 @@ const Room = ({ match }) => {
             <h2 className="text-xl font-semibold mb-2">{roomInfo.roomName}</h2>
             <p>Room Code: {roomInfo.roomCode}</p>
             <p>Room Owner: {roomInfo.roomOwner}</p>
-            <p>Connected Users: {roomInfo.connectedUsers.length}</p>
+            <p>Connected Users: {userList.length}</p>
+            <div className='flex flex-col'>
             <Link to="/explore-rooms">
               <button className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4">
                 Back to Explore Rooms
@@ -209,6 +307,7 @@ const Room = ({ match }) => {
             {roomInfo.roomOwner === user.name && (
               <button className="bg-red-500 text-white px-4 py-2 rounded-md mt-2" onClick={deleteRoom}>Delete Room</button>
             )}
+            </div>
             {leftPanelVisible ? (
               <button onClick={closePanels} className="xs:block md:hidden absolute top-4 right-4 z-50">
                 &#10005;
@@ -218,31 +317,35 @@ const Room = ({ match }) => {
         )}
 
         {/* Chat Messages */}
-        <div className="flex-1 p-4 mt-auto">
-          <div className="bg-white rounded-lg p-4 shadow-md mb-4">
-            {/* Placeholder Chat Messages */}
-            <div>
-              <div className="bg-blue-500 text-white p-2 rounded-md mb-2">
-                <p>Hi there!</p>
-              </div>
-              <div className="bg-gray-300 p-2 rounded-md mb-2">
-                <p>How can I help you?</p>
-              </div>
+        <div className="flex-1 p-4 mt-auto overflow-hidden" style={{height:roomHeight}}>
+        <div ref={chatMessageRef} className="bg-white rounded-lg p-4 shadow-md mb-4 overflow-y-scroll" style={{height:messageHeight}} > 
+          {/* Display Chat Messages */}
+          {Messages.map((message, index) => (
+            <div key={index} className={`p-2 rounded-md mb-2 ${message.user === user.name ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}>
+              <p>{message.user}: {message.content}</p>
             </div>
+          ))}
 
-            {/* Chat Input */}
-            <div className="flex md:flex-row xs:flex-col md:justify-center md:items-center">
-              <input
-                type="text"
-                placeholder="Type your message..."
-                className="border border-gray-300 p-2 w-full rounded-md mb-2 md:mb-0 md:mr-2"
-              />
-              <button className="bg-blue-500 text-white xs:py-2 rounded-md mb-2 md:mb-0 md:ml-2 min-w-[150px]">
-                Send Message
-              </button>
-            </div>
-          </div>
+          
         </div>
+        {/* Chat Input */}
+        <div className="flex md:flex-row xs:flex-col md:justify-center md:items-center">
+            <input
+              type="text"
+              placeholder="Type your message..."
+              value={currentMessage}
+              onChange={(e) => setCurrentMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="border border-gray-300 p-2 w-full rounded-md mb-2 md:mb-0 md:mr-2"
+            />
+            <button
+              onClick={sendMessage}
+              className="bg-blue-500 text-white xs:py-2 rounded-md mb-2 md:mb-0 md:ml-2 min-w-[150px]"
+            >
+              Send Message
+            </button>
+          </div>
+      </div>
 
         {/* Right Panel */}
         {rightPanelVisible && (
@@ -250,9 +353,9 @@ const Room = ({ match }) => {
             <h2 className="text-xl font-semibold mb-2">Connected Users</h2>
             <p>Total Users: {userList.length}</p>
             <ul>
-              {userList.map((user) => (
-                <li key={user.id}>{user.name}</li>
-              ))}
+            {userList.map((user, index) => (
+              <li key={index}>{user.name}</li>
+            ))}
             </ul>
             {rightPanelVisible ? (
               <button onClick={closePanels} className="xs:block md:hidden absolute top-4 right-4 z-50">
