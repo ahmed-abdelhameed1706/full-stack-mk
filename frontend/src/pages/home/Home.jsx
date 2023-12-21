@@ -24,7 +24,7 @@ const Home = () => {
   }, []);
 
   const getUser = () => {
-    axios.get(`http://127.0.0.1:5000/api/users/${session_id}`)
+    axios.get(`https://chat.eng-ahmed.me/api/users/${session_id}`)
       .then((res) => {
         console.log(res.data);
         setUsers(res.data);
@@ -81,7 +81,7 @@ const Home = () => {
     const session_id = uuidv4();
     const nickname = document.getElementById('nickname').value;
 
-    axios.put('http://localhost:5000/api/user', {
+    axios.put('https://chat.eng-ahmed.me/api/user', {
       session_id,
       name: nickname,
     })
